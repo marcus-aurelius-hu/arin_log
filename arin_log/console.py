@@ -14,7 +14,6 @@ niets met loggen te maken heeft. De logger logt; de console toont.
 """
 
 from os import system, name, path
-
 from arin_log.logger import log_notes
 
 br = chr(10)
@@ -56,7 +55,7 @@ def cons_menu(optlst, logloc=None):
 
     De functie blijft het menu tonen tot de gebruiker een geldige
     keuze maakt. 'exit', 'e', 'q' en 'quit' geven 'exit(0)' terug."""
-    global br
+
     exts = ['e', 'exit', 'q', 'quit']
     tlst = optlst
     if 'exit' not in tlst:

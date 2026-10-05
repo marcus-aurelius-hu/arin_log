@@ -4,11 +4,11 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "arin-log"
-version = "0.1.0"
+version = "0.2.0"
 description = "A lightweight logging package for long-running pipelines: a virtual assistant for the user, a clean archive for the developer."
 readme = "README.md"
 requires-python = ">=3.9"
-license = { text = "MIT" }
+license = "MIT"
 authors = [
     { name = "Marcus Aurelius", email = "marcus.aurelius.hu@gmail.com" }
 ]
@@ -16,7 +16,6 @@ keywords = ["logging", "pipeline", "console", "logger", "arin"]
 classifiers = [
     "Development Status :: 3 - Alpha",
     "Intended Audience :: Developers",
-    "License :: OSI Approved :: MIT License",
     "Operating System :: OS Independent",
     "Programming Language :: Python :: 3",
     "Programming Language :: Python :: 3.9",
@@ -25,9 +24,6 @@ classifiers = [
     "Programming Language :: Python :: 3.12",
     "Programming Language :: Python :: 3.13",
     "Topic :: System :: Logging",
-]
-dependencies = [
-    "py-setenv",
 ]
 
 [project.urls]

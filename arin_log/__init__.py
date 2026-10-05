@@ -21,19 +21,19 @@ Vanuit de logger:
     config_logs, file_exist, tijd
 
 Vanuit de folder:
-    log_folder, change_folder
+    change_folder, get_folder
 
 Vanuit de console:
     cons_menu
 
 Interne functies blijven bereikbaar via hun eigen module, bijvoorbeeld:
     from arin_log.logger import not_set
-    from arin_log.folder import getEnv, setEnv, get_folder
+    from arin_log.folder import get_config
     from arin_log.utils import load_json, save_json
     from arin_log.console import cls, menu_dict
 """
 
-__version__ = "0.1.0"
+__version__ = "0.2.0"
 
 from arin_log.logger import (
     log_start,
@@ -46,8 +46,8 @@ from arin_log.logger import (
 )
 
 from arin_log.folder import (
-    log_folder,
     change_folder,
+    get_folder,
 )
 
 from arin_log.console import (
@@ -62,7 +62,7 @@ __all__ = [
     "config_logs",
     "file_exist",
     "tijd",
-    "log_folder",
     "change_folder",
+    "get_folder",
     "cons_menu",
 ]

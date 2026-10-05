@@ -1,23 +1,34 @@
 from os import path
-from sys import _getframe
 from json import dump, load
 
-prgnm = path.basename(__file__).split('.')[0]
+# Vaste ANSI-kleuren voor _warn.
+# Los van de user-config (log_cnfg.json), omdat utils.py een blad is
+# en geen toegang heeft tot de logger.
+# Kleurcodes uit log_cnfg.json: cyan=36m, pink=95m, lightred=91m.
+_CYAN = "\033[36m"
+_RESET = "\033[00m"
 
 
-def load_json(pf, logloc=None, required=True):
+def _warn(note, word, color):
+    """Print een waarschuwing op de console.
+
+    'Arin' wordt altijd cyaan. Het opgegeven woord krijgt de
+    opgegeven kleurcode. Wordt alleen gebruikt bij interne fouten
+    in utils.py (corrupt of ontbrekend bestand).
+
+    Deze functie staat los van de logger: utils.py is een blad en
+    mag niet van logger afhangen (zou een circulaire import geven)."""
+    note = note.replace(word, f"\033[{color}{word}{_RESET}")
+    print(f"{_CYAN}Arin{_RESET} : {note}")
+    return
+
+
+def load_json(pf):
     """Leest een JSON-bestand en retourneert de inhoud als dict.
     Retourneert {} als het bestand ontbreekt of corrupt is.
 
-    required=True  -> ontbrekend of corrupt bestand wordt gelogd (default).
-    required=False -> ontbrekend of corrupt bestand is stil; {} wordt
-                      teruggegeven zonder melding. Bedoeld voor
-                      user-specifieke bestanden die de productie niet
-                      mogen storen."""
-    from arin_log.logger import log_except
-    global prgnm
-    frm = _getframe()
-    logloc = prgnm if logloc is None else logloc
+    Bij ontbreken of corruptie wordt een melding op de console
+    geprint, met Arin-prefix en vaste kleuren."""
     jsnd = {}
     fnm = path.basename(pf)
     if path.isfile(pf):
@@ -25,32 +36,26 @@ def load_json(pf, logloc=None, required=True):
             with open(pf, encoding='utf-8') as fil:
                 jsnd = load(fil)
         except Exception:
-            if required:
-                log_except(frm, ' ; '.join(['data', fnm, 'corrupt']), logloc=logloc)
+            _warn(f"data ; {fnm} ; corrupt", "corrupt", "95m")
     else:
-        if required:
-            log_except(frm, ' ; '.join(['file', fnm, 'inexistent']), logloc=logloc)
+        _warn(f"file ; {fnm} ; inexistent", "inexistent", "91m")
     return jsnd
 
 
-def save_json(pf, data, indent=None, logloc=None):
+def save_json(pf, data, indent=None):
     """Schrijft data als JSON naar pf.
 
     indent=None of een negatief getal -> geen indentering.
     indent=<int> >= 0                 -> indentering met die breedte.
 
     Retourneert True bij succes, anders False.
-    Bij een fout wordt de fout gelogd via log_except."""
-    from arin_log.logger import log_except
-    global prgnm
-    frm = _getframe()
+    Bij een fout wordt een melding op de console geprint."""
     indent = indent if isinstance(indent, int) and indent >= 0 else None
-    logloc = prgnm if logloc is None else logloc
     fnm = path.basename(pf)
     try:
         with open(pf, 'w', encoding='utf-8') as fil:
             dump(data, fil, ensure_ascii=False, indent=indent)
         return True
     except Exception:
-        log_except(frm, ' ; '.join(['save', fnm, 'fail']), logloc=logloc)
+        _warn(f"save ; {fnm} ; fail", "fail", "91m")
         return False

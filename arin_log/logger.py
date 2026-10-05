@@ -4,7 +4,7 @@ logger.py
 Centrale logging-module van arin_log.
 
 Ondersteunende modules:
-    folder.py   - beheert de log folder via de env-variabele 'arin_log'.
+    folder.py   - beheert de config en de log folder.
     utils.py    - algemene helpers (load_json, save_json).
     console.py  - console-interactie (menu, scherm wissen).
 
@@ -20,16 +20,13 @@ from re import sub
 import time
 
 from arin_log import folder
-from arin_log.utils import load_json
 
 color_words = {}
 color_codes = {}
 prgnm = ''
 tas = ''
 tas2 = ''
-cnfmp = ''
 br = chr(10)
-get_quotes = False
 recs_dic = {}
 
 
@@ -209,33 +206,17 @@ def log_exit(prginf, imp=None, cons=None, logloc=None):
         sys.exit(0)
 
 
-def config_logs(config_folder=None, logloc=None):
-    """Leest de logger-instellingen uit log_cnfg.json en settings.json.
+def config_logs():
+    """Leest de kleuren uit config_log.json (via folder.get_config)
+    en zet ze als globals.
 
-    log_cnfg.json wordt standaard gelezen uit de map waar logger.py staat
-    (de package folder), zodat het werkt na een pip-installatie.
-    Als config_folder is meegegeven, wordt die map gebruikt.
-
-    settings.json wordt gelezen uit de log folder (folder.log_folder).
-    Dat is een user-specifiek bestand: als het ontbreekt of corrupt is,
-    wordt het stil overgeslagen (required=False). De productie van de
-    logger mag daar niet door verstoord worden.
-
-    De gevonden sleutels in log_cnfg.json worden als globals gezet
-    (bijvoorbeeld color_words en color_codes). settings.json is optioneel;
-    als het ontbreekt, blijft get_quotes op False."""
-    global cnfmp, get_quotes
-    logloc = prgnm if logloc is None else logloc
-    cnfmp = config_folder if config_folder else path.dirname(__file__)
-    fnm = 'log_cnfg.json'
-    pf = path.join(cnfmp, fnm)
-    jsnd = load_json(pf, logloc=logloc)
+    De sleutel 'log_folder' wordt overgeslagen; die hoort bij folder.py."""
+    jsnd = folder.get_config()
     if len(jsnd) > 0:
         for k in jsnd.keys():
+            if k == "log_folder":
+                continue
             globals()[k] = jsnd.get(k, False)
-    stngs = load_json(path.join(folder.log_folder, 'settings.json'),
-                      logloc=prgnm, required=False)
-    get_quotes = stngs.get('run_quotes', False)
     return
 
 
@@ -274,30 +255,11 @@ if not_set():
     tas2 = time.strftime('%y-%m-%d')
     tas = time.strftime('%Y-%m-%d')
     _ensure_log_folder()
-    config_logs(logloc=prgnm)
+    config_logs()
 
 
-# =====================================================================
-# DEMO — alleen bij 'python logger.py'
-# =====================================================================
-# Doel: de ontwikkelaar of gebruiker laat zien wat log_notes doet op de
-# console: de 'Arin :'-prefix, de kleuren uit log_cnfg.json, en het
-# verschil tussen een gewoon bericht en een afsluitend bericht (end=True).
-#
-# Bewust minimaal:
-#   - geen logloc  -> er wordt geen logbestand aangeraakt
-#   - geen log_start, log_except, log_exit
-#   - geen input() -> het script eindigt vanzelf
-# =====================================================================
 if __name__ == "__main__":
-    log_notes([
-        'startup ; this is a minimal demo of log_notes',
-        'running ; colors come from log_cnfg.json',
-        'success ; words like success are green',
-        'error ; words like error are lightred',
-        'exception ; words like exception are pink',
-        'completed ; this line ends the demo',
-    ])
-    log_notes(br)
-    log_notes('shutdown ; this is an end=True message', end=True)
+    from arin_log.demo_log import demo
+    demo()
     exit(0)
+
