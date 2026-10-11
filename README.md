@@ -90,6 +90,27 @@ my_pipeline ; 14:32:11 ; completed
 
 ---
 
+## JSON helpers
+
+`arin_log` ships with two JSON helpers, available directly from the
+package:
+
+```python
+from arin_log import load_json, save_json
+
+data = load_json("myfile.json")
+save_json("myfile.json", data, indent=4)
+```
+
+`load_json` returns `{}` if the file is missing or corrupt.
+`save_json` returns `True` on success, `False` on failure.
+
+These helpers come with `arin_log` because most modules already
+import the package — so they are available wherever you need them,
+without an extra dependency.
+
+---
+
 ## What makes `arin_log` different?
 
 | Aspect | `arin_log` | Loguru / stdlib / structlog |
@@ -157,4 +178,4 @@ MIT — see [LICENSE](LICENSE).
 
 ## Status
 
-**Alpha (0.2.0).** The core works. Tests are still in development.
+**Alpha (0.2.1).** The core works. Tests are still in development.

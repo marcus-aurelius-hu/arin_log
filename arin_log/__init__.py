@@ -26,14 +26,16 @@ Vanuit de folder:
 Vanuit de console:
     cons_menu
 
+Vanuit utils:
+    load_json, save_json
+
 Interne functies blijven bereikbaar via hun eigen module, bijvoorbeeld:
     from arin_log.logger import not_set
     from arin_log.folder import get_config
-    from arin_log.utils import load_json, save_json
     from arin_log.console import cls, menu_dict
 """
 
-__version__ = "0.2.0"
+__version__ = "0.2.1"
 
 from arin_log.logger import (
     log_start,
@@ -54,6 +56,11 @@ from arin_log.console import (
     cons_menu,
 )
 
+from arin_log.utils import (
+    load_json,
+    save_json,
+)
+
 __all__ = [
     "log_start",
     "log_notes",
@@ -65,4 +72,6 @@ __all__ = [
     "change_folder",
     "get_folder",
     "cons_menu",
+    "load_json",
+    "save_json",
 ]

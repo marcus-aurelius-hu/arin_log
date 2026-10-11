@@ -17,7 +17,7 @@ from os import path, makedirs
 from sys import _getframe, stderr, exit
 from gc import collect
 from re import sub
-import time
+import time, sleep
 
 from arin_log import folder
 
@@ -221,7 +221,6 @@ def config_logs():
 
 
 def file_exist(pf, timeout=None):
-    from time import sleep
     timeout = 0.24 if timeout is None else timeout
     if pf is None:
         return False
