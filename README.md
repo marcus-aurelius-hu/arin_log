@@ -26,12 +26,12 @@ character. This is a deliberate choice not to abuse the AI hype.
 
 **The console** — Arin talks to the user, step by step:
 
-![Arin in the console](docs/console.png)
+![Arin in the console](https://raw.githubusercontent.com/marcus-aurelius-hu/arin_log/main/docs/console.png)
 
 **The log file** — the trail of a full trading day, 13 hours, with
 exceptions and recovery, ending with a report:
 
-![Log file after 13 hours](docs/log_file.png)
+![Log file after 13 hours](https://raw.githubusercontent.com/marcus-aurelius-hu/arin_log/main/docs/log_file.png)
 
 The user sees a story. The developer sees a trail. Both from the same
 call, to two different destinations.
