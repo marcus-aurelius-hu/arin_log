@@ -22,6 +22,22 @@ character. This is a deliberate choice not to abuse the AI hype.
 
 ---
 
+## In production
+
+**The console** — Arin talks to the user, step by step:
+
+![Arin in the console](docs/console.png)
+
+**The log file** — the trail of a full trading day, 13 hours, with
+exceptions and recovery, ending with a report:
+
+![Log file after 13 hours](docs/log_file.png)
+
+The user sees a story. The developer sees a trail. Both from the same
+call, to two different destinations.
+
+---
+
 ## Installation
 
 ```bash
@@ -220,4 +236,4 @@ MIT — see [LICENSE](LICENSE).
 
 ## Status
 
-**Alpha (0.2.2).** The core works. Tests are still in development.
+**Alpha (0.2.3).** The core works. Tests are still in development.

@@ -33,7 +33,7 @@ Interne functies blijven bereikbaar via hun eigen module, bijvoorbeeld:
     from arin_log.console import menu_dict
 """
 
-__version__ = "0.2.2"
+__version__ = "0.2.3"
 
 from arin_log.logger import (
     log_start,
