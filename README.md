@@ -90,6 +90,45 @@ my_pipeline ; 14:32:11 ; completed
 
 ---
 
+## Public API
+
+All functions and helpers below are available directly from the
+package:
+
+```python
+from arin_log import (
+    # Logger
+    log_start, log_notes, log_except, log_exit,
+    config_logs, file_exist,
+    # Helpers
+    tijd, tas, cls,
+    load_json, save_json,
+    # Folder
+    change_folder, get_folder,
+    # Console
+    cons_menu,
+)
+```
+
+| Name | Purpose |
+|------|---------|
+| `log_start` | Mark the start of a run and refresh the daily log date |
+| `log_notes` | Write notes to the console and/or the log file |
+| `log_except` | Log an exception with `module.function.line` info |
+| `log_exit` | Mark the end of a run (and optionally exit the process) |
+| `config_logs` | Load the colors from `config_log.json` |
+| `file_exist` | Check if a file exists, with an optional wait time |
+| `tijd` | Return the current time as `HH:MM:SS` |
+| `tas` | Today as string (`YYYY-MM-DD`), set at import |
+| `cls` | Clear the console (Windows: `cls`, otherwise `clear`) |
+| `load_json` | Read a JSON file, return `{}` if missing or corrupt |
+| `save_json` | Write data as JSON, return `True` or `False` |
+| `change_folder` | Open the folder dialog and update the config |
+| `get_folder` | Return the current log folder |
+| `cons_menu` | Show a console menu and return the chosen command |
+
+---
+
 ## JSON helpers
 
 `arin_log` ships with two JSON helpers, available directly from the
@@ -128,13 +167,16 @@ console and archive + Arin.
 
 ## How it works
 
-The package consists of four modules, each with a clear task:
+The package consists of three modules, each with a clear task:
 
 - **`logger.py`** — the heart: `log_start`, `log_notes`, `log_except`,
-  `log_exit`, and the helpers.
+  `log_exit`, plus the helpers `tijd`, `tas`, `cls`, `load_json`,
+  `save_json`, and `config_logs`.
 - **`folder.py`** — manages the config folder and the log folder.
-- **`console.py`** — console interaction: clear screen, menus.
-- **`utils.py`** — JSON helpers (`load_json`, `save_json`).
+- **`console.py`** — console interaction: menus.
+
+**`utils.py`** remains as an internal helper for `folder.py` only.
+It is not part of the public API.
 
 ### Configuration
 
@@ -178,4 +220,4 @@ MIT — see [LICENSE](LICENSE).
 
 ## Status
 
-**Alpha (0.2.1).** The core works. Tests are still in development.
+**Alpha (0.2.2).** The core works. Tests are still in development.

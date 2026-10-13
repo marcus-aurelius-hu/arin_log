@@ -5,21 +5,20 @@ Centrale logging-module van arin_log.
 
 Ondersteunende modules:
     folder.py   - beheert de config en de log folder.
-    utils.py    - algemene helpers (load_json, save_json).
     console.py  - console-interactie (menu, scherm wissen).
 
 Publieke functies:
     log_start, log_notes, log_except, log_exit, config_logs,
-    file_exist, tijd, not_set, last_record.
+    file_exist, tijd, cls, load_json, save_json, tas.
 """
 
-from os import path, makedirs
-from sys import _getframe, stderr, exit
+from json import load as jload, dump as jdump
+from os import makedirs, name, path, system
+from sys import _getframe, stderr
+from time import sleep, strftime
+from arin_log import folder
 from gc import collect
 from re import sub
-import time, sleep
-
-from arin_log import folder
 
 color_words = {}
 color_codes = {}
@@ -37,7 +36,13 @@ def not_set():
 
 
 def tijd():
-    return time.strftime("%H:%M:%S")
+    return strftime("%H:%M:%S")
+    
+    
+def cls():
+    """Wist het scherm. Op Windows met 'cls', anders met 'clear'."""
+    system('cls' if name == 'nt' else 'clear')
+    return
 
 
 def last_record(logloc):
@@ -104,7 +109,6 @@ def to_file(data, logloc=None):
                                 lijn = '_' * (lng - 1) + br
                             txtFile.write(lijn)
                             recs_dic[logloc] = 'ne'
-                txtFile.close()
         except Exception:
             st = ' ; '.join(['logging', fnm, 'fail'])
             log_except(frm, st, mod=prgnm, logloc=logloc)
@@ -121,7 +125,6 @@ def log_notes(notes, cons=None, logloc=None, end=False, ar_on=True):
     end=True  -> gebruik 'Arin' als prefix (voor afsluitende berichten).
     end=False -> gebruik 'Arin :' als prefix (of geen prefix als ar_on=False).
     """
-    global br, prgnm
     cons = True if cons is None else cons
     st = False if logloc is None else True
     if isinstance(notes, str):
@@ -153,7 +156,7 @@ def log_start(pnm, imp=None, cons=None, logloc=None):
     imp = False if imp is None else imp
     typ = 'pending' if imp else 'running'
     cons = True if cons is None else cons
-    tas2 = time.strftime('%y-%m-%d')
+    tas2 = strftime('%y-%m-%d')
     lijn = ' ; '.join([pnm, tijd(), typ])
     if last_record(logloc) != br:
         lijn = [br, lijn]
@@ -164,7 +167,6 @@ def log_start(pnm, imp=None, cons=None, logloc=None):
 
 
 def log_except(frm, note, mod=None, cons=None, logloc=None):
-    global br
     logloc = 'error' if logloc is None else logloc
     cons = True if cons is None else cons
     if last_record(logloc) == br:
@@ -185,7 +187,6 @@ def log_except(frm, note, mod=None, cons=None, logloc=None):
 
 
 def log_exit(prginf, imp=None, cons=None, logloc=None):
-    global br
     imp = False if imp is None else imp
     cons = True if cons is None else cons
     notes = [prginf] if isinstance(prginf, str) else prginf
@@ -197,8 +198,8 @@ def log_exit(prginf, imp=None, cons=None, logloc=None):
         notes[-1] = ' ; '.join([notes[-1], tijd(), 'terminated'])
     notes.append(br)
     log_notes(notes, logloc=logloc, cons=cons)
-    collect()
     if imp:
+        collect()
         return
     else:
         import sys
@@ -221,20 +222,24 @@ def config_logs():
 
 
 def file_exist(pf, timeout=None):
+    """
+    Controleert of een bestand bestaat, met een maximum wachttijd.
+    Retourneert True zodra het bestand bestaat.
+    Retourneert False als het bestand na 'timeout' seconden nog
+    niet bestaat, of als 'pf' None is.
+    """
+    
     timeout = 0.24 if timeout is None else timeout
     if pf is None:
         return False
-    else:
-        st = True
-        slt = 0.08
-        tt = 0
-        while not path.isfile(pf):
-            tt = tt + slt
-            if tt >= timeout:
-                st = False
-                break
-            sleep(slt)
-    return st
+    slt = 0.08
+    tt = 0
+    while not path.isfile(pf):
+        sleep(slt)
+        tt += slt
+        if tt >= timeout:
+            return False
+    return True
 
 
 def _ensure_log_folder():
@@ -245,14 +250,56 @@ def _ensure_log_folder():
         makedirs(folder.log_folder, exist_ok=True)
     except Exception:
         stderr.write(f"log ; folder ; inexistent{br}administrator ; adjustments ; required")
-        exit(1)
+        exit(0)
     return
+    
+
+def load_json(pf, logloc=None):
+    """Leest een JSON-bestand. Retourneert {} bij ontbreken of corruptie."""
+    logloc = prgnm if logloc is None else logloc
+    jsnd = {}
+    fnm = path.basename(pf)
+    if path.isfile(pf):
+        try:
+            with open(pf, encoding='utf-8') as fil:
+                jsnd = jload(fil)
+        except Exception:
+            fcnm = _getframe().f_code.co_name
+            tmp = f"data ; {fnm} ; corrupt"
+            log_notes(tmp)
+            log_notes(f"⚠️ {tmp}", cons=False, logloc=logloc)
+            log_notes(f"⚠️ {prgnm} ; {fcnm} ; {tijd()}", cons=False, logloc=logloc)
+    else:
+        fcnm = _getframe().f_code.co_name
+        tmp = f"file ; {fnm} ; inexistent"
+        log_notes(tmp)
+        log_notes(f"⚠️ {tmp}", cons=False, logloc=logloc)
+        log_notes(f"⚠️ {prgnm} ; {fcnm} ; {tijd()}", cons=False, logloc=logloc)
+    return jsnd
+
+
+def save_json(pf, data, indent=None, logloc=None):
+    """Schrijft data als JSON. Retourneert True bij succes, anders False."""
+    logloc = prgnm if logloc is None else logloc
+    indent = indent if isinstance(indent, int) and indent >= 0 else None
+    fnm = path.basename(pf)
+    try:
+        with open(pf, 'w', encoding='utf-8') as fil:
+            jdump(data, fil, ensure_ascii=False, indent=indent)
+        return True
+    except Exception:
+        fcnm = _getframe().f_code.co_name
+        tmp = f"save ; {fnm} ; fail"
+        log_notes(tmp)
+        log_notes(f"⚠️ {tmp}", cons=False, logloc=logloc)
+        log_notes(f"⚠️ {prgnm} ; {fcnm} ; {tijd()}", cons=False, logloc=logloc)
+        return False
 
 
 if not_set():
     prgnm = path.basename(__file__).split('.')[0]
-    tas2 = time.strftime('%y-%m-%d')
-    tas = time.strftime('%Y-%m-%d')
+    tas2 = strftime('%y-%m-%d')
+    tas = strftime('%Y-%m-%d')
     _ensure_log_folder()
     config_logs()
 
@@ -261,4 +308,4 @@ if __name__ == "__main__":
     from arin_log.demo_log import demo
     demo()
     exit(0)
-
+    

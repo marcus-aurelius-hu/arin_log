@@ -4,26 +4,20 @@ console.py
 Console-interactie voor arin_log.
 
 Bevat:
-    cls()                    - wist het scherm (Windows: cls, anders clear)
     menu_dict(optlst)        - bouwt een dict van genummerde menu-opties
     cons_menu(optlst, ...)   - toont een console-menu en retourneert
                                de gekozen functie als commando-string.
+
+`cls()` woont in logger.py en is daar publiek.
 
 Dit is een aparte module omdat console-interactie (menu, scherm wissen)
 niets met loggen te maken heeft. De logger logt; de console toont.
 """
 
-from os import system, name, path
-from arin_log.logger import log_notes
+from os import path
+from arin_log.logger import log_notes, cls
 
 br = chr(10)
-prgnm = path.basename(__file__).split('.')[0]
-
-
-def cls():
-    """Wist het scherm. Op Windows met 'cls', anders met 'clear'."""
-    system('cls' if name == 'nt' else 'clear')
-    return
 
 
 def menu_dict(optlst):
@@ -89,3 +83,4 @@ def cons_menu(optlst, logloc=None):
             else:
                 com = f'{com}()'
     return com
+    

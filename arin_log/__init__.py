@@ -18,7 +18,8 @@ Publieke API
 ------------
 Vanuit de logger:
     log_start, log_notes, log_except, log_exit,
-    config_logs, file_exist, tijd
+    config_logs, file_exist, tijd, tas,
+    load_json, save_json, cls
 
 Vanuit de folder:
     change_folder, get_folder
@@ -26,16 +27,13 @@ Vanuit de folder:
 Vanuit de console:
     cons_menu
 
-Vanuit utils:
-    load_json, save_json
-
 Interne functies blijven bereikbaar via hun eigen module, bijvoorbeeld:
-    from arin_log.logger import not_set
+    from arin_log.logger import not_set, last_record
     from arin_log.folder import get_config
-    from arin_log.console import cls, menu_dict
+    from arin_log.console import menu_dict
 """
 
-__version__ = "0.2.1"
+__version__ = "0.2.2"
 
 from arin_log.logger import (
     log_start,
@@ -45,6 +43,10 @@ from arin_log.logger import (
     config_logs,
     file_exist,
     tijd,
+    tas,
+    load_json,
+    save_json,
+    cls,
 )
 
 from arin_log.folder import (
@@ -56,11 +58,6 @@ from arin_log.console import (
     cons_menu,
 )
 
-from arin_log.utils import (
-    load_json,
-    save_json,
-)
-
 __all__ = [
     "log_start",
     "log_notes",
@@ -69,9 +66,11 @@ __all__ = [
     "config_logs",
     "file_exist",
     "tijd",
+    "tas",
+    "load_json",
+    "save_json",
+    "cls",
     "change_folder",
     "get_folder",
     "cons_menu",
-    "load_json",
-    "save_json",
 ]
