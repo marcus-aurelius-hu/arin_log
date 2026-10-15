@@ -149,20 +149,25 @@ def log_notes(notes, cons=None, logloc=None, end=False, ar_on=True):
 
 
 def log_start(pnm, imp=None, cons=None, logloc=None):
-    """Markeert het begin van een module-run en ververst de datum
+    """
+    Markeert het begin van een module-run en ververst de datum
     waarop het logbestand is gebaseerd (tas2). Zo komt een run die
-    na middernacht start in het logbestand van de nieuwe dag."""
+    na middernacht start in het logbestand van de nieuwe dag.
+    """
+    
     global br, tas2
     imp = False if imp is None else imp
     typ = 'pending' if imp else 'running'
     cons = True if cons is None else cons
     tas2 = strftime('%y-%m-%d')
     lijn = ' ; '.join([pnm, tijd(), typ])
+    notes = []
     if last_record(logloc) != br:
-        lijn = [br, lijn]
+        notes.append(br)
+    notes.append(lijn)
     if not imp:
-        lijn = [lijn, br]
-    log_notes(lijn, cons=cons, logloc=logloc)
+        notes.append(br)
+    log_notes(notes, cons=cons, logloc=logloc)
     return
 
 

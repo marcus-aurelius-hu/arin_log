@@ -236,4 +236,4 @@ MIT — see [LICENSE](LICENSE).
 
 ## Status
 
-**Alpha (0.2.3).** The core works. Tests are still in development.
+**Alpha (0.2.5).** The core works. Tests are still in development.
