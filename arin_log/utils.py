@@ -1,4 +1,4 @@
-from os import path
+from os import path, name
 from json import dump, load
 
 # Vaste ANSI-kleuren voor _warn.
@@ -58,4 +58,28 @@ def save_json(pf, data, indent=None):
         return True
     except Exception:
         _warn(f"save ; {fnm} ; fail", "fail", "91m")
+        return False
+
+
+def enable_vt_mode():
+    """
+    Zet ANSI/VT-verwerking aan op de Windows-console.
+
+    Eenmalig uitgevoerd bij het laden van arin_log, zodat kleurcodes
+    in alle modules werken. Op niet-Windows platforms en bij omleiding
+    (pipe, bestand) doet de functie niets. Retourneert True bij
+    succes, anders False.
+    """
+    
+    if name != 'nt':
+        return False
+    try:
+        from ctypes import windll, byref
+        from ctypes.wintypes import DWORD
+        hnd = windll.kernel32.GetStdHandle(-11)
+        mod = DWORD()
+        if not windll.kernel32.GetConsoleMode(hnd, byref(mod)):
+            return False
+        return bool(windll.kernel32.SetConsoleMode(hnd, mod.value | 0x0004))
+    except Exception:
         return False

@@ -54,6 +54,9 @@ is saved in:
 The dialog appears only once. On every next run, `arin_log` reads
 this file and skips the dialog.
 
+On Windows 10 and later, `arin_log` enables ANSI color support
+automatically on import. No configuration required.
+
 If you want to change the log folder later:
 
 ```python
@@ -130,7 +133,7 @@ from arin_log import (
 |------|---------|
 | `log_start` | Mark the start of a run and refresh the daily log date |
 | `log_notes` | Write notes to the console and/or the log file |
-| `log_except` | Log an exception with `module.function.line` info |
+| `log_except` | Log an exception; takes a frame and one or more note lines |
 | `log_exit` | Mark the end of a run (and optionally exit the process) |
 | `config_logs` | Load the colors from `config_log.json` |
 | `file_exist` | Check if a file exists, with an optional wait time |
@@ -191,8 +194,8 @@ The package consists of three modules, each with a clear task:
 - **`folder.py`** — manages the config folder and the log folder.
 - **`console.py`** — console interaction: menus.
 
-**`utils.py`** remains as an internal helper for `folder.py` only.
-It is not part of the public API.
+**`utils.py`** remains as an internal helper for `folder.py` and
+for the Windows VT activation. It is not part of the public API.
 
 ### Configuration
 
@@ -236,4 +239,4 @@ MIT — see [LICENSE](LICENSE).
 
 ## Status
 
-**Alpha (0.2.5).** The core works. Tests are still in development.
+**Alpha (0.2.6).** The core works. Tests are still in development.

@@ -14,6 +14,7 @@ Publieke functies:
 
 from json import load as jload, dump as jdump
 from os import makedirs, name, path, system
+from arin_log.utils import enable_vt_mode
 from sys import _getframe, stderr
 from time import sleep, strftime
 from arin_log import folder
@@ -122,13 +123,21 @@ def log_notes(notes, cons=None, logloc=None, end=False, ar_on=True):
     """Schrijft notes naar de console (indien cons=True) en naar het
     logbestand (indien logloc is meegegeven).
 
+    notes    - string of lijst. Niet-string elementen worden naar
+               string omgezet.
     end=True  -> gebruik 'Arin' als prefix (voor afsluitende berichten).
     end=False -> gebruik 'Arin :' als prefix (of geen prefix als ar_on=False).
     """
     cons = True if cons is None else cons
     st = False if logloc is None else True
+    if not cons and not st:
+        return
     if isinstance(notes, str):
         notes = [notes]
+    elif isinstance(notes, list):
+        notes = [str(el) for el in notes]
+    else:
+        notes = [str(notes)]
     for el in notes:
         if cons:
             if end:
@@ -171,30 +180,70 @@ def log_start(pnm, imp=None, cons=None, logloc=None):
     return
 
 
-def log_except(frm, note, mod=None, cons=None, logloc=None):
-    logloc = 'error' if logloc is None else logloc
+def log_except(frm, notes, mod=None, cons=None, logloc=None):
+    """
+    Logt een exception.
+
+    frm    - frame (via sys._getframe() in de aanroeper). Verplicht.
+    notes  - string of lijst. De eerste regel gaat naar de console
+             (met Arin-prefix); alle regels gaan naar het logbestand.
+             Niet-string elementen worden naar string omgezet.
+    mod    - override voor de module naam; anders afgeleid uit frm.
+    cons   - True (default) toont de eerste regel op de console.
+    logloc - context voor het logbestand; default de module naam uit frm.
+    """
+
     cons = True if cons is None else cons
-    if last_record(logloc) == br:
-        notes = []
+
+    try:
+        flpf = frm.f_code.co_filename
+        fcnm = frm.f_code.co_name
+    except Exception:
+        tmp = "parameter ; frm ; invalid"
+        log_notes(tmp)
+        log_notes(f"⚠️ {tmp}", cons=False, logloc="logger")
+        log_notes(f"⚠️ logger ; log_except ; {tijd()}", cons=False, logloc="logger")
+        return
+
+    mod = path.basename(flpf).split('.')[0] if mod is None else str(mod)
+    logloc = mod if logloc is None else logloc
+
+    if isinstance(notes, str):
+        notes = [notes]
+    elif isinstance(notes, list):
+        notes = [str(el) for el in notes]
     else:
-        notes = [br]
-    flpf = frm.f_code.co_filename
-    mod = path.basename(flpf).split('.')[0] if mod is None else mod
-    fncpos = '.'.join([mod, frm.f_code.co_name, str(frm.f_lineno)])
-    lijn = ' ; '.join([fncpos, tijd(), 'exception'])
-    notes.append(lijn)
-    if isinstance(note, str):
-        notes.append(note)
-    elif isinstance(note, list):
-        notes = notes + note
-    log_notes(notes, logloc=logloc, cons=cons)
+        notes = []
+
+    if cons and notes:
+        log_notes(notes[0])
+
+    log_list = []
+    if last_record(logloc) != br:
+        log_list.append(br)
+    if notes:
+        log_list.append(f"⚠️ {notes[0]}")
+    log_list.append(f"⚠️ {mod} ; {fcnm} ; {tijd()}")
+    for el in notes[1:]:
+        log_list.append(f"⚠️ {el}")
+    log_list.append(br)
+    log_notes(log_list, cons=False, logloc=logloc)
     return
 
 
 def log_exit(prginf, imp=None, cons=None, logloc=None):
     imp = False if imp is None else imp
     cons = True if cons is None else cons
-    notes = [prginf] if isinstance(prginf, str) else prginf
+
+    if isinstance(prginf, str):
+        notes = [prginf] if prginf else ['unknown']
+    elif isinstance(prginf, list):
+        notes = [str(el) for el in prginf]
+        if not notes:
+            notes = ['unknown']
+    else:
+        notes = ['unknown']
+
     if imp:
         notes[-1] = ' ; '.join([notes[-1], tijd(), 'completed'])
     else:
@@ -203,13 +252,13 @@ def log_exit(prginf, imp=None, cons=None, logloc=None):
         notes[-1] = ' ; '.join([notes[-1], tijd(), 'terminated'])
     notes.append(br)
     log_notes(notes, logloc=logloc, cons=cons)
+
     if imp:
         collect()
         return
-    else:
-        import sys
-        sys.tracebacklimit = 0
-        sys.exit(0)
+    import sys
+    sys.tracebacklimit = 0
+    sys.exit(0)
 
 
 def config_logs():
@@ -306,6 +355,7 @@ if not_set():
     tas2 = strftime('%y-%m-%d')
     tas = strftime('%Y-%m-%d')
     _ensure_log_folder()
+    enable_vt_mode()
     config_logs()
 
 
