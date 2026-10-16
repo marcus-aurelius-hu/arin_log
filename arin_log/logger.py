@@ -19,10 +19,10 @@ from sys import _getframe, stderr
 from time import sleep, strftime
 from arin_log import folder
 from gc import collect
-from re import sub
 
 color_words = {}
 color_codes = {}
+_end_index = {}
 prgnm = ''
 tas = ''
 tas2 = ''
@@ -38,8 +38,8 @@ def not_set():
 
 def tijd():
     return strftime("%H:%M:%S")
-    
-    
+
+
 def cls():
     """Wist het scherm. Op Windows met 'cls', anders met 'clear'."""
     system('cls' if name == 'nt' else 'clear')
@@ -52,25 +52,37 @@ def last_record(logloc):
     return result
 
 
+def colorize(note):
+    """Kleurt 'Arin' overal en het langste kleurwoord aan het einde
+    van de regel. Retourneert de aangepaste string. Faalt nooit:
+    bij elke onverwachte situatie wordt de originele string teruggegeven."""
+    if not isinstance(note, str):
+        try:
+            note = str(note)
+        except Exception:
+            return ''
+    try:
+        words = note.split(' ')
+        last = words[-1] if words else ''
+        for w in _end_index.get(last, []):
+            if note.endswith(w):
+                clrc = color_codes.get(color_words.get(w))
+                if clrc is not None:
+                    note = note[:-len(w)] + f"\033[{clrc}{w}\033[00m"
+                break
+        if 'Arin' in note:
+            clrc = color_codes.get(color_words.get('Arin'))
+            if clrc is not None:
+                note = note.replace('Arin', f"\033[{clrc}Arin\033[00m")
+    except Exception:
+        pass
+    return note
+
+
 def to_cons(note):
-    """Print note naar de console, met kleuren volgens color_words
-    en color_codes. Woorden worden alleen gekleurd als ze exact
-    overeenkomen (inclusief spaties)."""
-    global color_words, color_codes
-    clrlst = list(color_words.keys())
-    if any([x in note for x in clrlst]):
-        for w in clrlst:
-            if w in note:
-                tmp = sub(r'[^\w\s]', '', note)
-                tmp = sub(' +', ' ', tmp)
-                nwlst = tmp.split(' ')
-                twl = w.split(' ')
-                if all([x in nwlst for x in twl]):
-                    clr = color_words.get(w, None)
-                    clrc = color_codes.get(clr, None)
-                    if clrc is not None:
-                        note = note.replace(w, f"\033[{clrc}{w}\033[00m")
-    print(note)
+    """Print note naar de console. Kleurt 'Arin' overal en het langste
+    kleurwoord aan het einde van de regel."""
+    print(colorize(note))
     return
 
 
@@ -163,7 +175,7 @@ def log_start(pnm, imp=None, cons=None, logloc=None):
     waarop het logbestand is gebaseerd (tas2). Zo komt een run die
     na middernacht start in het logbestand van de nieuwe dag.
     """
-    
+
     global br, tas2
     imp = False if imp is None else imp
     typ = 'pending' if imp else 'running'
@@ -263,15 +275,29 @@ def log_exit(prginf, imp=None, cons=None, logloc=None):
 
 def config_logs():
     """Leest de kleuren uit config_log.json (via folder.get_config)
-    en zet ze als globals.
+    en zet ze als globals. Bouwt daarna de index op het laatste woord
+    van elke kleurterm, gesorteerd op lengte (langste eerst).
 
     De sleutel 'log_folder' wordt overgeslagen; die hoort bij folder.py."""
+    global _end_index
     jsnd = folder.get_config()
     if len(jsnd) > 0:
         for k in jsnd.keys():
             if k == "log_folder":
                 continue
             globals()[k] = jsnd.get(k, False)
+    _end_index = {}
+    try:
+        for k in color_words:
+            if k == 'Arin':
+                continue
+            last = k.split(' ')[-1]
+            if last:
+                _end_index.setdefault(last, []).append(k)
+        for last in _end_index:
+            _end_index[last].sort(key=len, reverse=True)
+    except Exception:
+        _end_index = {}
     return
 
 
@@ -282,7 +308,7 @@ def file_exist(pf, timeout=None):
     Retourneert False als het bestand na 'timeout' seconden nog
     niet bestaat, of als 'pf' None is.
     """
-    
+
     timeout = 0.24 if timeout is None else timeout
     if pf is None:
         return False
@@ -306,7 +332,7 @@ def _ensure_log_folder():
         stderr.write(f"log ; folder ; inexistent{br}administrator ; adjustments ; required")
         exit(0)
     return
-    
+
 
 def load_json(pf, logloc=None):
     """Leest een JSON-bestand. Retourneert {} bij ontbreken of corruptie."""
@@ -363,4 +389,3 @@ if __name__ == "__main__":
     from arin_log.demo_log import demo
     demo()
     exit(0)
-    

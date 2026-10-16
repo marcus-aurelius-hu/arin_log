@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "arin-log"
-version = "0.2.6"
+version = "0.2.7"
 description = "A lightweight logging package for long-running pipelines: a virtual assistant for the user, a clean archive for the developer."
 readme = "README.md"
 requires-python = ">=3.9"
